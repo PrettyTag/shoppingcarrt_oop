@@ -1,5 +1,7 @@
 from shoppingcart import ShoppingCart
 import csv
+from datetime import datetime
+
 
 class Customer:
     def __init__(self, name):
@@ -29,24 +31,40 @@ class Customer:
             for item in self.cart.products:
                 print(item.name)
 
-    def save_cart_to_file(self, filename='customer_cart.csv'):
+    def save_cart_to_file(self, filename='customer_cart.csv', sales_filename='sales.csv'):
         """
         Saves the customer's information and cart items to a CSV file.
 
-        :param filename: The name of the CSV file to save to (default is 'customer_cart.csv').
+        :param filename: The name of the CSV file to save cart items to (default is 'customer_cart.csv').
+        :param sales_filename: The name of the CSV file to save sales information to (default is 'sales.csv').
         """
         try:
-            # Open the CSV file in write mode
-            with open(filename, mode='a', newline='') as file:
-                writer = csv.writer(file)
+            # Generate a sale_id based on the current timestamp
+            sale_id = datetime.now().strftime('%Y%m%d%H%M%S')
+
+            # Open the cart CSV file in write mode
+            with open(filename, mode='a', newline='') as cart_file:
+                cart_writer = csv.writer(cart_file)
 
                 # Write the header if the file is empty
-                if file.tell() == 0:
-                    writer.writerow(['Customer Name', 'Product Name', 'Price', 'Category'])
+                if cart_file.tell() == 0:
+                    cart_writer.writerow(['Sale ID', 'Customer Name', 'Product Name', 'Price', 'Category', 'Cart ID'])
 
                 # Write customer and cart information
                 for item in self.cart.products:
-                    writer.writerow([self.name, item.name, item.price, item.category])
+                    cart_writer.writerow([sale_id, self.name, item.name, item.price, item.category, self.cart.cart_id])
+
+            # Open the sales CSV file in append mode
+            with open(sales_filename, mode='a', newline='') as sales_file:
+                sales_writer = csv.writer(sales_file)
+
+                # Write the header if the file is empty
+                if sales_file.tell() == 0:
+                    sales_writer.writerow(['Sale ID', 'Customer Name', 'Total Price', 'Cart ID'])
+
+                # Write sales information
+                total_price = sum(item.price for item in self.cart.products)
+                sales_writer.writerow([sale_id, self.name, total_price, self.cart.cart_id])
 
             print(f"Customer '{self.name}' and cart items saved to {filename} successfully.")
         except Exception as e:

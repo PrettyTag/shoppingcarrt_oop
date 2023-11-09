@@ -12,7 +12,7 @@ class Product:
         self.name = name
         self.price = price
         self.category = category
-        self.save_to_csv()
+
 
     def save_to_csv(self, filename='products.csv'):
         """
